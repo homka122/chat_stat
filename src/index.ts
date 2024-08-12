@@ -16,6 +16,15 @@ type message = {
   media_type?: "sticker";
 };
 
+type messageFormat = {
+  from: string;
+  from_id: string;
+  text: string;
+  isHavePhoto: boolean;
+  isHaveSticker: boolean;
+  date?: Date;
+};
+
 type userStat = {
   username: string;
   id: string;
@@ -26,15 +35,7 @@ type userStat = {
   messChar: number;
 };
 
-type messageFormat = {
-  from: string;
-  from_id: string;
-  text: string;
-  isHavePhoto: boolean;
-  isHaveSticker: boolean;
-};
-
-function getMessagesFromFile(filename: string) {
+function getMessagesFromFile(filename: string): message[] {
   const jsonFile = fs.readFileSync(path.resolve(`src/${filename}.json`));
   const json: Array<message> = JSON.parse(jsonFile.toString());
   return json.filter((o) => o.type === "message");
@@ -64,6 +65,7 @@ function formatMessages(messages: message[]): messageFormat[] {
       text: msg.text_entities.map((ent) => ent.text).join(" "),
       isHavePhoto: isHavePhoto,
       isHaveSticker: isHaveSticker,
+      date: new Date(msg.date),
     };
   });
   return msgsText;
@@ -177,6 +179,121 @@ function createWordsData() {
   });
 
   return words;
+}
+
+function statsByPervs() {
+  type messageFormatMarked = messageFormat & {
+    perv: boolean;
+  };
+
+  const tgMsgs = getMessagesFromFile("result");
+  const msgs = formatMessages(tgMsgs);
+
+  const users = new Map<string, string>();
+  msgs.forEach((it) => {
+    if (!users.has(it.from_id)) users.set(it.from_id, it.from);
+  });
+
+  const idsString = Array.from(users.keys())
+    .map((it) => `'${it}'`)
+    .join(",");
+
+  const not_perv_old = [
+    "user814586622",
+    "user1614269527",
+    "user463981762",
+    "user227964061",
+    "user389198971",
+    "user1147185372",
+    "user1116508724",
+    "user625777584",
+    "user421568075",
+    "user865264074",
+    "user1468781048",
+    "user542914289",
+    "user1703358344",
+    "user383152289",
+  ];
+
+  const not_perv = [
+    "user421568075",
+    "user5577844834",
+    "user1147185372",
+    "user1028278252",
+    "user834594571",
+    "user964997951",
+    "user714735633",
+    "user746854520",
+    "user1319897461",
+    "user881837799",
+    "user1752687551",
+    "user510449525",
+    "user1346110354",
+    "user383152289",
+    "user419505706",
+    "user720516620",
+    "user624950303",
+    "user606683187",
+    "user6660283064",
+    "user5705139370",
+    "user865562988",
+    "user453448386",
+    "user528097933",
+    "user722146218",
+    "user463981762",
+    "user625777584",
+    "user1667806547",
+    "user645018727",
+    "user483039996",
+  ];
+
+  const msgsMarked: messageFormatMarked[] = msgs.map((it) => {
+    return { ...it, perv: !not_perv.includes(it.from_id) };
+  });
+
+  const msgsFromNotPervs = msgs.filter((it) => !not_perv.includes(it.from_id));
+
+  const groupsObject: { [date: string]: messageFormatMarked[] } =
+    msgsMarked.reduce((groups: any, msg) => {
+      const date = msg.date?.toISOString().split("T")[0];
+      if (!date) return;
+
+      if (!groups[date]) groups[date] = [];
+
+      groups[date].push(msg);
+      return groups;
+    }, {});
+
+  const groups = Object.keys(groupsObject).map((date) => {
+    return {
+      date,
+      msgs: groupsObject[date],
+    };
+  });
+
+  const countPervMsgs = (msgs: messageFormatMarked[]): number => {
+    return msgs.filter((it) => it.perv).length;
+  };
+
+  const groupsCountPerv = groups.map((group) => {
+    const countPerv = countPervMsgs(group.msgs);
+
+    return {
+      date: group.date,
+      countPerv,
+      countNotPerv: group.msgs.length - countPerv,
+    };
+  });
+
+  const sliceCount = 20;
+
+  const groupsCountPervSlices = groupsCountPerv.slice(0, sliceCount);
+
+  console.log(groupsCountPervSlices.map((it) => `"${it.date}"`).join(","));
+  console.log(groupsCountPervSlices.map((it) => `${it.countPerv}`).join(","));
+  console.log(
+    groupsCountPervSlices.map((it) => `${it.countNotPerv}`).join(",")
+  );
 }
 
 createStatsData("count_msg");
