@@ -43,38 +43,32 @@ function getMessagesFromFile(filename: string): message[] {
 
 function formatMessages(messages: message[]): messageFormat[] {
   const msgPlains = messages.map((msg) => {
-    return {
-      ...msg,
-      text_entities: msg.text_entities.filter(
-        (plain) => plain.type === "plain"
-      ),
-    };
+    const text_entities = msg.text_entities.filter(
+      (plain) => plain.type === "plain"
+    );
+
+    return { ...msg, text_entities };
   });
+
   const msgsText = msgPlains.map((msg) => {
-    let isHavePhoto = false;
-    let isHaveSticker = false;
-    if (msg.photo) {
-      isHavePhoto = true;
-    }
-    if (msg.media_type === "sticker") {
-      isHaveSticker = true;
-    }
-    return {
-      from: msg.from,
-      from_id: msg.from_id,
-      text: msg.text_entities.map((ent) => ent.text).join(" "),
-      isHavePhoto: isHavePhoto,
-      isHaveSticker: isHaveSticker,
-      date: new Date(msg.date),
-    };
+    const { from, from_id } = msg;
+    const text = msg.text_entities.map((ent) => ent.text).join(" ");
+    const isHavePhoto = Boolean(msg.photo);
+    const isHaveSticker = msg.media_type === "sticker";
+    const date = new Date(msg.date);
+
+    return { from, from_id, text, isHavePhoto, isHaveSticker, date };
   });
+
   return msgsText;
 }
 
 function getUserStats(messages: messageFormat[]): userStat[] {
   let userStats: userStat[] = [];
+
   messages.forEach((msg) => {
     const candidate = userStats.find((user) => user.id === msg.from_id);
+
     if (!candidate) {
       userStats.push({
         id: msg.from_id,
@@ -85,27 +79,26 @@ function getUserStats(messages: messageFormat[]): userStat[] {
         count_sticker: msg.isHaveSticker ? 1 : 0,
         messChar: 0,
       });
-    } else {
-      candidate.count_char += msg.text.length;
-      candidate.count_msg += 1;
-      candidate.count_photo += msg.isHavePhoto ? 1 : 0;
-      candidate.count_sticker += msg.isHaveSticker ? 1 : 0;
+
+      return;
     }
+
+    candidate.count_char += msg.text.length;
+    candidate.count_msg += 1;
+    candidate.count_photo += msg.isHavePhoto ? 1 : 0;
+    candidate.count_sticker += msg.isHaveSticker ? 1 : 0;
   });
+
   return userStats;
 }
 
 function addMesCharStat(users: userStat[]): userStat[] {
   return users.map((user) => {
-    let sum = false;
-    if (user.count_msg > 200) {
-      sum = true;
-    }
+    if (user.count_msg < 200) return { ...user, messChar: 0 };
+
     return {
       ...user,
-      messChar: sum
-        ? parseFloat((user.count_char / user.count_msg).toFixed(2))
-        : 0,
+      messChar: parseFloat((user.count_char / user.count_msg).toFixed(2)),
     };
   });
 }
@@ -136,35 +129,26 @@ function createStatsData(
   const messages = formatMessages(messagesRaw);
   const userStats = addMesCharStat(getUserStats(messages));
   const userStatsSorted = sortUserStats(userStats, field);
-  console.log(
-    userStatsSorted
-      .slice(0, 100)
-      .map(
-        (st) =>
-          `Username: ${st.username} count_msg: ${st.count_msg} count_char: ${st.count_char}`
-      )
-      .join("\n")
-  );
+  const userStatsSortedSliced = userStatsSorted.slice(0, 100);
+
+  const userStatToString = (st) =>
+    `Username: ${st.username} count_msg: ${st.count_msg} count_char: ${st.count_char}`;
+
+  console.log(userStatsSortedSliced.map(userStatToString).join("\n"));
+
   console.log("\nНИКИ:\n");
-  console.log(
-    userStatsSorted
-      .slice(0, 100)
-      .map((st) => st.username)
-      .join("\n")
-  );
+  console.log(userStatsSortedSliced.map((st) => st.username).join("\n"));
+
   console.log("\nКОЛИЧЕСТВО:\n");
-  console.log(
-    userStatsSorted
-      .slice(0, 100)
-      .map((st) => st[field])
-      .join("\n")
-  );
+  console.log(userStatsSortedSliced.map((st) => st[field]).join("\n"));
 }
 
 function createWordsData() {
   let words: any = {};
+
   const messagesRaw = getMessagesFromFile(FILENAME);
   const messages = formatMessages(messagesRaw);
+
   messages.forEach((msg) => {
     msg.text
       .toLowerCase()
