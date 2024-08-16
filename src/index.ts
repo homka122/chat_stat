@@ -1,3 +1,4 @@
+import { create } from "domain";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -131,7 +132,7 @@ function createStatsData(
   const userStatsSorted = sortUserStats(userStats, field);
   const userStatsSortedSliced = userStatsSorted.slice(0, 100);
 
-  const userStatToString = (st) =>
+  const userStatToString = (st: userStat) =>
     `Username: ${st.username} count_msg: ${st.count_msg} count_char: ${st.count_char}`;
 
   console.log(userStatsSortedSliced.map(userStatToString).join("\n"));
@@ -182,7 +183,10 @@ function statsByPervs() {
     .map((it) => `'${it}'`)
     .join(",");
 
-  const not_perv_old = [
+  // console.log(users)
+  // console.log(idsString)
+
+  const not_perv = [
     "user814586622",
     "user1614269527",
     "user463981762",
@@ -197,39 +201,46 @@ function statsByPervs() {
     "user542914289",
     "user1703358344",
     "user383152289",
+    "user1752687551",
+    "user1667806547",
+    "user713209953",
+    "user856062306",
+    "user528097933",
+    "user881837799",
+  
   ];
 
-  const not_perv = [
-    "user421568075",
-    "user5577844834",
-    "user1147185372",
-    "user1028278252",
-    "user834594571",
-    "user964997951",
-    "user714735633",
-    "user746854520",
-    "user1319897461",
-    "user881837799",
-    "user1752687551",
-    "user510449525",
-    "user1346110354",
-    "user383152289",
-    "user419505706",
-    "user720516620",
-    "user624950303",
-    "user606683187",
-    "user6660283064",
-    "user5705139370",
-    "user865562988",
-    "user453448386",
-    "user528097933",
-    "user722146218",
-    "user463981762",
-    "user625777584",
-    "user1667806547",
-    "user645018727",
-    "user483039996",
-  ];
+  // const not_perv = [
+  //   "user421568075",
+  //   "user5577844834",
+  //   "user1147185372",
+  //   "user1028278252",
+  //   "user834594571",
+  //   "user964997951",
+  //   "user714735633",
+  //   "user746854520",
+  //   "user1319897461",
+  //   "user881837799",
+  //   "user1752687551",
+  //   "user510449525",
+  //   "user1346110354",
+  //   "user383152289",
+  //   "user419505706",
+  //   "user720516620",
+  //   "user624950303",
+  //   "user606683187",
+  //   "user6660283064",
+  //   "user5705139370",
+  //   "user865562988",
+  //   "user453448386",
+  //   "user528097933",
+  //   "user722146218",
+  //   "user463981762",
+  //   "user625777584",
+  //   "user1667806547",
+  //   "user645018727",
+  //   "user483039996",
+  // ];
 
   const msgsMarked: messageFormatMarked[] = msgs.map((it) => {
     return { ...it, perv: !not_perv.includes(it.from_id) };
@@ -273,11 +284,15 @@ function statsByPervs() {
 
   const groupsCountPervSlices = groupsCountPerv.slice(0, sliceCount);
 
-  console.log(groupsCountPervSlices.map((it) => `"${it.date}"`).join(","));
+  console.log(groupsCountPervSlices.map((it) => `${it.date}`).join(","));
   console.log(groupsCountPervSlices.map((it) => `${it.countPerv}`).join(","));
   console.log(
     groupsCountPervSlices.map((it) => `${it.countNotPerv}`).join(",")
   );
 }
 
-createStatsData("count_msg");
+if (process.argv[2] === "--perv") {
+  statsByPervs()
+} else {
+  createStatsData("count_msg")
+}

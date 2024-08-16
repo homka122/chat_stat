@@ -12,7 +12,8 @@
   },
   "scripts": {
     "build": "tsc src/index.ts -w",
-    "start": "tsc src/index.ts && node src/index > result.data"
+    "start": "tsc src/index.ts && node src/index > result.data",
+    "perv": "tsc src/index.ts && node src/index --perv | python3 src/plot2.py"
   },
   "devDependencies": {
     "@types/node": "^20.4.7"
