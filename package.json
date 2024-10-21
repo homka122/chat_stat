@@ -1,21 +1,22 @@
 {
-  "name": "015_chat_stat",
-  "version": "1.0.0",
-  "main": "index.js",
-  "license": "MIT",
-  "dependencies": {
-    "@types/big-json": "^3.2.0",
-    "@types/stream-json": "^1.7.3",
-    "big-json": "^3.2.0",
-    "stream-json": "^1.8.0",
-    "typescript": "^5.1.6"
-  },
-  "scripts": {
-    "build": "tsc src/index.ts -w",
-    "start": "tsc src/index.ts && node src/index > result.data",
-    "perv": "tsc src/index.ts && node src/index --perv | python3 src/plot2.py"
-  },
-  "devDependencies": {
-    "@types/node": "^20.4.7"
-  }
+    "name": "015_chat_stat",
+    "version": "1.0.0",
+    "main": "index.js",
+    "license": "MIT",
+    "dependencies": {
+        "@types/big-json": "^3.2.0",
+        "@types/stream-json": "^1.7.3",
+        "big-json": "^3.2.0",
+        "stream-json": "^1.8.0",
+        "typescript": "^5.1.6"
+    },
+    "scripts": {
+        "build": "tsc src/index.ts -w",
+        "start": "tsc src/index.ts && node src/index > result.data",
+        "perv": "tsc src/index.ts && node src/index --perv | python3 src/plot2.py",
+        "reaction": "tsc src/index.ts && node src/index --reaction > result.data"
+    },
+    "devDependencies": {
+        "@types/node": "^20.4.7"
+    }
 }
