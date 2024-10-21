@@ -14,7 +14,8 @@
         "build": "tsc src/index.ts -w",
         "start": "tsc src/index.ts && node src/index > result.data",
         "perv": "tsc src/index.ts && node src/index --perv | python3 src/plot2.py",
-        "reaction": "tsc src/index.ts && node src/index --reaction > result.data"
+        "reaction": "tsc src/index.ts && node src/index --reaction > result.data",
+        "rzhachka": "tsc src/index.ts && node src/index --rzhachka > result.data"
     },
     "devDependencies": {
         "@types/node": "^20.4.7"

@@ -165,7 +165,8 @@ function sortUserStats(
 }
 
 function createStatsData(
-    field: "count_char" | "count_msg" | "count_photo" | "count_sticker" | "messChar" | "reactions"
+    field: "count_char" | "count_msg" | "count_photo" | "count_sticker" | "messChar" | "reactions",
+    rzachka: boolean = false
 ) {
     const messagesRaw = getMessagesFromFile(FILENAME);
     const messages = formatMessages(messagesRaw);
@@ -181,7 +182,13 @@ function createStatsData(
             result.push({
                 username: us.username,
                 reactions: Array.from(us.reactions_get)
-                    // .filter((a) => a[0] == "😁")
+                    .filter((a) => {
+                        if (rzachka) {
+                            return a[0] == "😁";
+                        } else {
+                            return true;
+                        }
+                    })
                     .sort((a, b) => b[1] - a[1])
                     .slice(0, 3)
                     .map((e) => Object({ emoji: e[0], count: e[1] })),
@@ -359,6 +366,8 @@ if (process.argv[2] === "--perv") {
     statsByPervs();
 } else if (process.argv[2] === "--reaction") {
     createStatsData("reactions");
+} else if (process.argv[2] == "--rzhachka") {
+    createStatsData("reactions", true);
 } else {
     createStatsData("count_msg");
 }
